@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Calculator - Time Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .nav-buttons {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        button {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #1a237e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+
+        button.active {
+            background-color: #283593;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        button:hover:not(.active) {
+            background-color: #283593;
+        }
+
+        button[disabled] {
+            background-color: #9fa8da;
+            cursor: not-allowed;
+        }
+
+        .time-diagram-container {
+            background: white;
+            padding: 20px 40px 40px 40px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 800px;
+        }
+        
+        .diagram-controls {
+            padding: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 40px;
+        }
+
+        .param-group {
+            display: flex;
+            align-items: center;
+        }
+        
+        .param-group span {
+            margin-right: 5px;
+            color: black;
+            font-size: 14px;
+        }
+        
+        .param-input {
+            width: 45px;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13px;
+            padding: 3px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: #1a237e;
+            background: transparent;
+        }
+        
+        #type-select {
+            width: 70px;
+        }
+
+        .param-input:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 3px rgba(26, 35, 126, 0.3);
+        }
+
+        .diagram {
+            position: relative;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 40px;
+        }
+
+        /* Timeline with arrow */
+        .timeline {
+            position: absolute;
+            width: calc(100% - 40px);
+            height: 2px;
+            background: #1a237e;
+            top: 50%;
+        }
+
+        /* Arrow head */
+        .timeline::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #1a237e;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+
+        .tick-container {
+            position: absolute;
+            display: flex;
+            justify-content: space-between;
+            width: calc(100% - 80px);
+            left: 40px;
+        }
+
+        .tick-point {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .tick-point.selected .tick {
+            background: #f50057;
+        }
+
+        .tick-point.selected .time-label {
+            color: #f50057;
+            font-weight: bold;
+        }
+
+        .pv-calculation {
+            text-align: center;
+            margin: 40px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            color: #1a237e;
+            font-size: 18px;
+        }
+
+        .pv-calculation .title {
+            margin-bottom: 15px;
+        }
+
+        .pv-calculation .result {
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .subscript {
+            font-size: 14px;
+            vertical-align: sub;
+        }
+
+        .tick {
+            width: 3px;
+            height: 20px;
+            background: #1a237e;
+            margin: 8px 0;
+        }
+
+        .value-input {
+            width: 60px;
+            text-align: center;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 14px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: #1a237e;
+            background: transparent;
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .value-input:focus {
+            outline: none;
+            border-color: #1a237e;
+            box-shadow: 0 0 3px rgba(26, 35, 126, 0.3);
+        }
+
+        .time-label {
+            position: absolute;
+            bottom: -35px;
+            color: #1a237e;
+            font-size: 16px;
+        }
+
+        .graph-container {
+            margin-top: 40px;
+            height: 300px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* --- Responsive Design for Mobile Devices --- */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+                font-size: 14px;
+            }
+            .container {
+                padding: 10px;
+            }
+            .nav-buttons {
+                margin-bottom: 15px;
+            }
+            button {
+                min-width: 120px;
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+            .time-diagram-container {
+                padding: 20px 15px;
+            }
+            .diagram-controls {
+                gap: 10px;
+                padding-bottom: 15px;
+                margin-bottom: 25px;
+            }
+            .param-group span {
+                font-size: 13px;
+            }
+            .param-input {
+                width: 40px;
+                font-size: 12px;
+            }
+            #type-select {
+                width: 65px;
+            }
+            .diagram {
+                height: 100px;
+                padding: 0 20px;
+            }
+            .tick-container {
+                width: calc(100% - 40px);
+                left: 20px;
+            }
+            .value-input {
+                width: 50px;
+                font-size: 12px;
+                top: -30px;
+            }
+            .time-label {
+                font-size: 14px;
+                bottom: -30px;
+            }
+            .pv-calculation {
+                margin: 30px 0;
+                font-size: 16px;
+            }
+            .pv-calculation .result {
+                font-size: 20px;
+            }
+            .graph-container {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-buttons">
+            <button id="btn-individual" onclick="handleModeChange('individual')">Individual Payments</button>
+            <button id="btn-annuity" onclick="handleModeChange('annuity')">Annuities</button>
+            <button id="btn-loan" onclick="handleModeChange('loan')">Loans</button>
+            <button id="btn-bond" onclick="handleModeChange('bond')">Bonds</button>
+        </div>
+
+        <div class="time-diagram-container">
+             <div class="diagram-controls">
+                <div class="param-group">
+                    <span>n =</span>
+                    <input type="number" class="param-input" value="4" min="1" max="20" id="n-input">
+                </div>
+                <div class="param-group">
+                    <span>i =</span>
+                    <input type="number" class="param-input" value="10" id="i-input">
+                    <span>%</span>
+                </div>
+                <div class="param-group annuity-param" style="display: none;">
+                    <span>Amount =</span>
+                    <input type="number" class="param-input" value="1" id="amount-input">
+                </div>
+                <div class="param-group annuity-param" style="display: none;">
+                    <span>Start =</span>
+                    <input type="number" class="param-input" value="1" id="start-date-input">
+                </div>
+                <div class="param-group annuity-param" style="display: none;">
+                    <span>End =</span>
+                    <input type="number" class="param-input" value="3" id="end-date-input">
+                </div>
+                <div class="param-group annuity-param" style="display: none;">
+                    <span>Type =</span>
+                    <select class="param-input" id="type-select">
+                        <option>Level</option>
+                    </select>
+                </div>
+                <div class="param-group loan-param" style="display: none;">
+                    <span>Loan Amount =</span>
+                    <input type="number" class="param-input" value="-1000" id="loan-amount-input">
+                </div>
+                <div class="param-group bond-param" style="display: none;">
+                    <span>Face Value =</span>
+                    <input type="number" class="param-input" value="100" id="face-value-input">
+                </div>
+                 <div class="param-group bond-param" style="display: none;">
+                    <span>Coupon Rate =</span>
+                    <input type="number" class="param-input" value="5" id="coupon-rate-input">
+                    <span>%</span>
+                </div>
+            </div>
+
+            <div class="diagram">
+                <div class="timeline"></div>
+                <div class="tick-container" id="tick-container">
+                    <!-- Ticks will be generated by JavaScript -->
+                </div>
+            </div>
+            <div class="pv-calculation">
+                <div class="title">Present Value at Selected Time</div>
+                <div class="result">PV<span class="subscript">0</span> = 0.00</div>
+            </div>
+            <div class="graph-container">
+                <canvas id="pvGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedTime = 0;
+        let cashFlowValues = new Map();
+        let pvChart = null;
+        let currentMode = 'individual';
+
+        function handleModeChange(newMode) {
+            currentMode = newMode;
+            const individualBtn = document.getElementById('btn-individual');
+            const annuityBtn = document.getElementById('btn-annuity');
+            const loanBtn = document.getElementById('btn-loan');
+            const bondBtn = document.getElementById('btn-bond');
+            const calcTitle = document.querySelector('.pv-calculation .title');
+
+            // Toggle visibility of mode-specific parameters
+            document.querySelectorAll('.annuity-param, .loan-param, .bond-param').forEach(el => el.style.display = 'none');
+            
+            if (newMode === 'annuity') {
+                document.querySelectorAll('.annuity-param').forEach(el => el.style.display = 'flex');
+            } else if (newMode === 'loan') {
+                document.querySelectorAll('.loan-param').forEach(el => el.style.display = 'flex');
+            } else if (newMode === 'bond') {
+                document.querySelectorAll('.bond-param').forEach(el => el.style.display = 'flex');
+            }
+            
+            // Toggle read-only state of cash flow inputs
+            const isCalculatedMode = newMode === 'loan' || newMode === 'bond';
+            document.querySelectorAll('.value-input').forEach(input => {
+                input.readOnly = isCalculatedMode;
+                input.style.cursor = isCalculatedMode ? 'not-allowed' : 'pointer';
+            });
+            
+            // Update active button state
+            document.querySelectorAll('.nav-buttons button').forEach(btn => btn.classList.remove('active'));
+
+            if (currentMode === 'annuity') {
+                annuityBtn.classList.add('active');
+                calcTitle.textContent = 'Present Value at Selected Time';
+                initializeAnnuities();
+            } else if (currentMode === 'loan') {
+                loanBtn.classList.add('active');
+                calcTitle.textContent = 'Outstanding Balance at Selected Time';
+                initializeLoan();
+            } else if (currentMode === 'bond') {
+                bondBtn.classList.add('active');
+                calcTitle.textContent = 'Price at Selected Time';
+                initializeBond();
+            } else {
+                individualBtn.classList.add('active');
+                calcTitle.textContent = 'Present Value at Selected Time';
+                initializeIndividualPayments();
+            }
+        }
+
+        function initializeIndividualPayments() {
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            cashFlowValues.clear();
+            for (let i = 0; i <= n; i++) {
+                const value = (i === 1) ? '1' : '0';
+                cashFlowValues.set(i, value);
+            }
+            updateTicks();
+        }
+
+        function initializeAnnuities() {
+            const nInput = document.getElementById('n-input');
+            const endDateInput = document.getElementById('end-date-input');
+            let n = parseInt(nInput.value) || 4;
+            let endDate = parseInt(endDateInput.value) || 3;
+
+            // Auto-increase n if endDate is larger
+            if (endDate > n) {
+                n = endDate;
+                nInput.value = n;
+            }
+            
+            const amount = parseFloat(document.getElementById('amount-input').value) || 1;
+            const startDate = parseInt(document.getElementById('start-date-input').value) || 1;
+
+            cashFlowValues.clear();
+            for (let i = 0; i <= n; i++) {
+                const value = (i >= startDate && i <= endDate) ? amount : 0;
+                cashFlowValues.set(i, value);
+            }
+            
+            updateTicks();
+        }
+        
+        function initializeLoan() {
+            const L_input = parseFloat(document.getElementById('loan-amount-input').value) || -1000;
+            const L = Math.abs(L_input); // Use absolute value for calculations
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const i = parseFloat(document.getElementById('i-input').value) / 100;
+            
+            if (i <= 0) { // Avoid division by zero
+                cashFlowValues.clear();
+                cashFlowValues.set(0, L_input);
+                for (let t = 1; t <= n; t++) {
+                    cashFlowValues.set(t, (L / n).toFixed(2)); 
+                }
+                updateTicks();
+                return;
+            }
+
+            // Calculate level payment R = L / a_n|i
+            const v = 1 / (1 + i);
+            const a_n_i = (1 - Math.pow(v, n)) / i;
+            const R = L / a_n_i;
+            
+            cashFlowValues.clear();
+            cashFlowValues.set(0, L_input); // Loan received (negative from lender's POV)
+            for (let t = 1; t <= n; t++) {
+                cashFlowValues.set(t, R.toFixed(2)); // Payments made (positive)
+            }
+            
+            updateTicks();
+        }
+        
+        function initializeBond() {
+            const F = parseFloat(document.getElementById('face-value-input').value) || 100;
+            const r = parseFloat(document.getElementById('coupon-rate-input').value) / 100;
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+
+            const coupon = F * r;
+
+            cashFlowValues.clear();
+            for (let t = 1; t <= n; t++) {
+                const payment = (t === n) ? coupon + F : coupon;
+                cashFlowValues.set(t, payment);
+            }
+            
+            // Calculate price at t=0 and set it as the initial cash flow
+            const priceAt0 = calculatePrice(0);
+            cashFlowValues.set(0, -priceAt0);
+
+            updateTicks();
+        }
+
+        function calculatePrice(time) {
+            const F = parseFloat(document.getElementById('face-value-input').value) || 100;
+            const r = parseFloat(document.getElementById('coupon-rate-input').value) / 100;
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const i = parseFloat(document.getElementById('i-input').value) / 100;
+
+            if (time >= n) return F;
+            if (i <= 0) return F;
+
+            const coupon = F * r;
+            const remainingPeriods = n - time;
+            const v = 1 / (1 + i);
+            
+            const a_remaining_i = (1 - Math.pow(v, remainingPeriods)) / i;
+            const price = coupon * a_remaining_i + F * Math.pow(v, remainingPeriods);
+
+            return price;
+        }
+
+        function calculateBalance(time) {
+            const L_input = parseFloat(document.getElementById('loan-amount-input').value) || -1000;
+            const L = Math.abs(L_input);
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const i = parseFloat(document.getElementById('i-input').value) / 100;
+
+            if (time >= n) return 0;
+            if (i <= 0) return L * (1 - (time / n));
+
+            // Prospective Method
+            const v = 1 / (1 + i);
+            const a_n_i = (1 - Math.pow(v, n)) / i;
+            const R = L / a_n_i;
+            
+            const remainingPeriods = n - time;
+            const a_remaining_i = (1 - Math.pow(v, remainingPeriods)) / i;
+            
+            const balance = R * a_remaining_i;
+            return (Math.abs(balance) < 0.01) ? 0 : balance;
+        }
+
+        function calculatePV(selectedTime) {
+            const values = Array.from(document.querySelectorAll('.value-input')).map(input => parseFloat(input.value) || 0);
+            const i = parseFloat(document.getElementById('i-input').value) / 100;
+            let pv = 0;
+
+            for (let t = 0; t < values.length; t++) {
+                if (values[t] !== 0) {
+                    if (t < selectedTime) {
+                        pv += values[t] * Math.pow(1 + i, selectedTime - t);
+                    } else if (t === selectedTime) {
+                        pv += values[t];
+                    } else {
+                        pv += values[t] / Math.pow(1 + i, t - selectedTime);
+                    }
+                }
+            }
+            return pv;
+        }
+
+        function updateGraph() {
+            if (pvChart) {
+                pvChart.destroy();
+            }
+
+            if (currentMode === 'loan') {
+                updateLoanBalanceGraph();
+            } else if (currentMode === 'bond') {
+                updateBondPriceGraph();
+            } else {
+                updatePVGraph();
+            }
+        }
+        
+        function updatePVGraph() {
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const labels = [];
+            const pvData = [];
+            
+            for (let t = 0; t <= n; t++) {
+                labels.push(t);
+                pvData.push(parseFloat(calculatePV(t)));
+            }
+
+            const ctx = document.getElementById('pvGraph').getContext('2d');
+            pvChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Present Value',
+                        data: pvData,
+                        borderColor: '#1a237e',
+                        backgroundColor: 'rgba(26, 35, 126, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#1a237e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: 'Time' }, min: 0, max: n, ticks: { stepSize: 1 }},
+                        y: { title: { display: true, text: 'Value' }}
+                    },
+                    plugins: {
+                        title: { display: true, text: 'Present Value Over Time' },
+                        tooltip: { callbacks: { label: context => `PV = ${context.parsed.y.toFixed(2)}` }}
+                    }
+                }
+            });
+        }
+        
+        function updateLoanBalanceGraph() {
+            const L_input = parseFloat(document.getElementById('loan-amount-input').value) || -1000;
+            const L = Math.abs(L_input);
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const i = parseFloat(document.getElementById('i-input').value) / 100;
+
+            const labels = [];
+            const balanceData = [];
+            const epsilon = 0.001;
+            
+            if (i > 0) {
+                const R = L / ((1 - Math.pow(1 / (1 + i), n)) / i);
+                let currentBalance = L;
+
+                labels.push(0);
+                balanceData.push(currentBalance);
+
+                for (let t = 1; t <= n; t++) {
+                    const balanceBeforePayment = currentBalance * (1 + i);
+                    labels.push(t - epsilon);
+                    balanceData.push(balanceBeforePayment);
+                    
+                    currentBalance = balanceBeforePayment - R;
+                    labels.push(t);
+                    balanceData.push(currentBalance);
+                }
+                 if (Math.abs(balanceData[balanceData.length-1]) < 0.01) {
+                    balanceData[balanceData.length-1] = 0;
+                }
+            }
+            
+            const ctx = document.getElementById('pvGraph').getContext('2d');
+            pvChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Outstanding Balance',
+                        data: balanceData,
+                        borderColor: '#f50057',
+                        tension: 0,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#f50057'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                         x: { type: 'linear', title: { display: true, text: 'Time' }, min: 0, max: n, ticks: { stepSize: 1 }},
+                         y: { title: { display: true, text: 'Balance' }, min: 0 }
+                    },
+                     plugins: {
+                        title: { display: true, text: 'Loan Balance Over Time' },
+                        tooltip: { callbacks: { label: context => `Balance = ${context.parsed.y.toFixed(2)}` }}
+                    }
+                }
+            });
+        }
+        
+        function updateBondPriceGraph() {
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const labels = [];
+            const priceData = [];
+
+            for (let t = 0; t <= n; t++) {
+                labels.push(t);
+                priceData.push(calculatePrice(t));
+            }
+            
+            const ctx = document.getElementById('pvGraph').getContext('2d');
+            pvChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Price',
+                        data: priceData,
+                        borderColor: '#00c853', // A green color for bonds
+                        backgroundColor: 'rgba(0, 200, 83, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#00c853'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                         x: { type: 'linear', title: { display: true, text: 'Time' }, min: 0, max: n, ticks: { stepSize: 1 }},
+                         y: { title: { display: true, text: 'Price' }}
+                    },
+                     plugins: {
+                        title: { display: true, text: 'Bond Price Over Time' },
+                        tooltip: { callbacks: { label: context => `Price = ${context.parsed.y.toFixed(2)}` }}
+                    }
+                }
+            });
+        }
+
+        function updateDisplay() {
+            const resultDiv = document.querySelector('.pv-calculation .result');
+            if (currentMode === 'loan') {
+                const balance = calculateBalance(selectedTime);
+                resultDiv.innerHTML = `B<span class="subscript">${selectedTime}</span> = ${balance.toFixed(2)}`;
+            } else if (currentMode === 'bond') {
+                const price = calculatePrice(selectedTime);
+                resultDiv.innerHTML = `P<span class="subscript">${selectedTime}</span> = ${price.toFixed(2)}`;
+            } else {
+                const pv = calculatePV(selectedTime);
+                resultDiv.innerHTML = `PV<span class="subscript">${selectedTime}</span> = ${pv.toFixed(2)}`;
+            }
+            updateGraph();
+        }
+
+        function createTickPoint(timeValue) {
+            const tickPoint = document.createElement('div');
+            tickPoint.className = 'tick-point';
+            if (timeValue === selectedTime) tickPoint.classList.add('selected');
+            
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = 'value-input';
+            const value = cashFlowValues.get(timeValue);
+            input.value = value ? parseFloat(value).toFixed(2) : '0.00';
+
+            // Set read-only status based on the current mode
+            const isCalculatedMode = currentMode === 'loan' || currentMode === 'bond';
+            input.readOnly = isCalculatedMode;
+            input.style.cursor = isCalculatedMode ? 'not-allowed' : 'pointer';
+            
+            const tick = document.createElement('div');
+            tick.className = 'tick';
+            
+            const timeLabel = document.createElement('div');
+            timeLabel.className = 'time-label';
+            timeLabel.textContent = timeValue;
+            
+            tickPoint.appendChild(input);
+            tickPoint.appendChild(tick);
+            tickPoint.appendChild(timeLabel);
+
+            // Store value changes in the Map and select this time period
+            input.addEventListener('focus', e => {
+                if (!e.target.readOnly) {
+                    document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
+                    tickPoint.classList.add('selected');
+                    selectedTime = timeValue;
+                    updateDisplay();
+                    e.target.select();
+                }
+            });
+
+            input.addEventListener('input', e => {
+                if (!e.target.readOnly) {
+                    cashFlowValues.set(timeValue, e.target.value);
+                    updateDisplay();
+                }
+            });
+
+            tick.addEventListener('click', () => {
+                document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
+                tickPoint.classList.add('selected');
+                selectedTime = timeValue;
+                updateDisplay();
+            });
+
+            timeLabel.addEventListener('click', () => {
+                document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
+                tickPoint.classList.add('selected');
+                selectedTime = timeValue;
+                updateDisplay();
+            });
+            
+            return tickPoint;
+        }
+
+        function updateTicks() {
+            const container = document.getElementById('tick-container');
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            
+            container.innerHTML = '';
+            
+            for (let i = 0; i <= n; i++) {
+                container.appendChild(createTickPoint(i));
+            }
+
+            updateDisplay();
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add event listeners
+            document.getElementById('n-input').addEventListener('change', () => {
+                if (currentMode === 'annuity') {
+                    const nVal = parseInt(document.getElementById('n-input').value);
+                    const endVal = parseInt(document.getElementById('end-date-input').value);
+                    if (nVal < endVal) {
+                        document.getElementById('end-date-input').value = nVal;
+                    }
+                    initializeAnnuities();
+                } else if (currentMode === 'loan') {
+                    initializeLoan();
+                } else if (currentMode === 'bond') {
+                    initializeBond();
+                } else {
+                    updateTicks();
+                }
+            });
+            document.getElementById('i-input').addEventListener('change', updateDisplay);
+            document.getElementById('amount-input').addEventListener('change', initializeAnnuities);
+            document.getElementById('start-date-input').addEventListener('change', initializeAnnuities);
+            document.getElementById('end-date-input').addEventListener('change', initializeAnnuities);
+            document.getElementById('type-select').addEventListener('change', initializeAnnuities);
+            document.getElementById('loan-amount-input').addEventListener('change', initializeLoan);
+            document.getElementById('face-value-input').addEventListener('change', initializeBond);
+            document.getElementById('coupon-rate-input').addEventListener('change', initializeBond);
+            
+            updateTicks();
+            handleModeChange('individual');
+        });
+    </script>
+</body>
+</html> 
