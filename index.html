@@ -720,7 +720,7 @@
             });
         }
 
-        function updateDisplay() {
+        function updateCalculationDisplay() {
             const resultDiv = document.querySelector('.pv-calculation .result');
             if (currentMode === 'loan') {
                 const balance = calculateBalance(selectedTime);
@@ -732,6 +732,10 @@
                 const pv = calculatePV(selectedTime);
                 resultDiv.innerHTML = `PV<span class="subscript">${selectedTime}</span> = ${pv.toFixed(2)}`;
             }
+        }
+
+        function updateAll() {
+            updateCalculationDisplay();
             updateGraph();
         }
 
@@ -768,7 +772,7 @@
                     document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
                     tickPoint.classList.add('selected');
                     selectedTime = timeValue;
-                    updateDisplay();
+                    updateCalculationDisplay();
                     e.target.select();
                 }
             });
@@ -776,7 +780,7 @@
             input.addEventListener('input', e => {
                 if (!e.target.readOnly) {
                     cashFlowValues.set(timeValue, e.target.value);
-                    updateDisplay();
+                    updateAll();
                 }
             });
 
@@ -784,14 +788,14 @@
                 document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
                 tickPoint.classList.add('selected');
                 selectedTime = timeValue;
-                updateDisplay();
+                updateCalculationDisplay();
             });
 
             timeLabel.addEventListener('click', () => {
                 document.querySelectorAll('.tick-point').forEach(p => p.classList.remove('selected'));
                 tickPoint.classList.add('selected');
                 selectedTime = timeValue;
-                updateDisplay();
+                updateCalculationDisplay();
             });
             
             return tickPoint;
@@ -807,7 +811,7 @@
                 container.appendChild(createTickPoint(i));
             }
 
-            updateDisplay();
+            updateAll();
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -828,7 +832,7 @@
                     updateTicks();
                 }
             });
-            document.getElementById('i-input').addEventListener('change', updateDisplay);
+            document.getElementById('i-input').addEventListener('change', updateAll);
             document.getElementById('amount-input').addEventListener('change', initializeAnnuities);
             document.getElementById('start-date-input').addEventListener('change', initializeAnnuities);
             document.getElementById('end-date-input').addEventListener('change', initializeAnnuities);
