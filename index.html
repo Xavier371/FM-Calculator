@@ -330,7 +330,7 @@
                 </div>
                 <div class="param-group">
                     <span>i =</span>
-                    <input type="number" class="param-input" value="10" id="i-input">
+                    <input type="number" class="param-input" value="10" min="0" id="i-input">
                     <span>%</span>
                 </div>
                 <div class="param-group annuity-param" style="display: none;">
@@ -456,6 +456,56 @@
             }
         }
 
+        function calculateOptimalTextBoxSize() {
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
+            const isMobile = window.innerWidth <= 768;
+            
+            // Calculate available space for text boxes
+            const padding = isMobile ? 60 : 120;
+            const availableWidth = containerWidth - padding;
+            const spacing = 10; // minimum space between boxes
+            const maxBoxWidth = (availableWidth - (spacing * n)) / (n + 1);
+            
+            // Set size constraints based on device and available space
+            let width, fontSize;
+            
+            if (maxBoxWidth >= 50) {
+                width = '50px';
+                fontSize = '12px';
+            } else if (maxBoxWidth >= 40) {
+                width = '40px';
+                fontSize = '11px';
+            } else if (maxBoxWidth >= 35) {
+                width = '35px';
+                fontSize = '10px';
+            } else if (maxBoxWidth >= 30) {
+                width = '30px';
+                fontSize = '9px';
+            } else if (maxBoxWidth >= 25) {
+                width = '25px';
+                fontSize = '8px';
+            } else if (maxBoxWidth >= 20) {
+                width = '20px';
+                fontSize = '7px';
+            } else {
+                width = '18px';
+                fontSize = '6px';
+            }
+            
+            return { width, fontSize };
+        }
+
+        function updateAllTextBoxSizes() {
+            const { width, fontSize } = calculateOptimalTextBoxSize();
+            const textBoxes = document.querySelectorAll('.value-input');
+            
+            textBoxes.forEach(input => {
+                input.style.width = width;
+                input.style.fontSize = fontSize;
+            });
+        }
+
         function handleModeChange(newMode) {
             currentMode = newMode;
             const individualBtn = document.getElementById('btn-individual');
@@ -544,7 +594,7 @@
             const n = parseInt(document.getElementById('n-input').value) || 4;
             const i = parseFloat(document.getElementById('i-input').value) / 100;
             
-            if (i <= 0) { // Avoid division by zero
+            if (i <= 0) { // Handle zero or negative interest rates
                 cashFlowValues.clear();
                 cashFlowValues.set(0, L_input);
                 for (let t = 1; t <= n; t++) {
@@ -595,7 +645,7 @@
             const i = parseFloat(document.getElementById('i-input').value) / 100;
 
             if (time >= n) return F;
-            if (i <= 0) return F;
+            if (i <= 0) return F; // For zero/negative rates, return face value
 
             const coupon = F * r;
             const remainingPeriods = n - time;
@@ -614,7 +664,7 @@
             const i = parseFloat(document.getElementById('i-input').value) / 100;
 
             if (time >= n) return 0;
-            if (i <= 0) return L * (1 - (time / n));
+            if (i <= 0) return L * (1 - (time / n)); // Linear amortization for zero/negative rates
 
             // Prospective Method
             const v = 1 / (1 + i);
@@ -636,10 +686,12 @@
             for (let t = 0; t < values.length; t++) {
                 if (values[t] !== 0) {
                     if (t < selectedTime) {
+                        // Compound forward - works with negative rates
                         pv += values[t] * Math.pow(1 + i, selectedTime - t);
                     } else if (t === selectedTime) {
                         pv += values[t];
                     } else {
+                        // Discount back - works with negative rates
                         pv += values[t] / Math.pow(1 + i, t - selectedTime);
                     }
                 }
@@ -870,7 +922,10 @@
             updateCalculationDisplay();
             updateDynamicDescription();
             updateGraph();
-            setTimeout(applyAutoScale, 10);
+            setTimeout(() => {
+                applyAutoScale();
+                updateAllTextBoxSizes();
+            }, 10);
         }
 
         function createTickPoint(timeValue) {
@@ -886,24 +941,7 @@
             // Show integers without decimals, others with 2 decimals
             input.value = nearInt(num) ? Math.round(num).toString() : num.toFixed(2);
 
-            // Smart sizing based on number of periods - smaller to prevent overlap
-            const n = parseInt(document.getElementById('n-input').value) || 4;
-            if (n <= 6) {
-                input.style.width = '50px';
-                input.style.fontSize = '12px';
-            } else if (n <= 10) {
-                input.style.width = '40px';
-                input.style.fontSize = '11px';
-            } else if (n <= 15) {
-                input.style.width = '35px';
-                input.style.fontSize = '10px';
-            } else if (n <= 20) {
-                input.style.width = '30px';
-                input.style.fontSize = '9px';
-            } else {
-                input.style.width = '25px';
-                input.style.fontSize = '8px';
-            }
+            // Dynamic sizing will be applied later via updateAllTextBoxSizes()
 
             // Set read-only status based on the current mode
             const isCalculatedMode = currentMode === 'loan' || currentMode === 'bond';
@@ -970,6 +1008,8 @@
             }
 
             updateAll();
+            // Ensure text box sizing is updated after DOM changes
+            setTimeout(updateAllTextBoxSizes, 20);
         }
         
         document.addEventListener('DOMContentLoaded', () => {
@@ -1010,9 +1050,12 @@
             document.getElementById('face-value-input').addEventListener('change', initializeBond);
             document.getElementById('coupon-rate-input').addEventListener('change', initializeBond);
             
-            // Window resize listener for responsive auto-scaling
+            // Window resize listener for responsive auto-scaling and text box sizing
             window.addEventListener('resize', () => {
-                setTimeout(applyAutoScale, 100);
+                setTimeout(() => {
+                    applyAutoScale();
+                    updateAllTextBoxSizes();
+                }, 100);
             });
             
             updateTicks();
