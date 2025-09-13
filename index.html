@@ -886,20 +886,23 @@
             // Show integers without decimals, others with 2 decimals
             input.value = nearInt(num) ? Math.round(num).toString() : num.toFixed(2);
 
-            // Smart sizing based on number of periods
+            // Smart sizing based on number of periods - smaller to prevent overlap
             const n = parseInt(document.getElementById('n-input').value) || 4;
-            if (n <= 8) {
-                input.style.width = '60px';
-                input.style.fontSize = '14px';
-            } else if (n <= 15) {
+            if (n <= 6) {
                 input.style.width = '50px';
                 input.style.fontSize = '12px';
-            } else if (n <= 25) {
+            } else if (n <= 10) {
                 input.style.width = '40px';
                 input.style.fontSize = '11px';
-            } else {
+            } else if (n <= 15) {
                 input.style.width = '35px';
                 input.style.fontSize = '10px';
+            } else if (n <= 20) {
+                input.style.width = '30px';
+                input.style.fontSize = '9px';
+            } else {
+                input.style.width = '25px';
+                input.style.fontSize = '8px';
             }
 
             // Set read-only status based on the current mode
