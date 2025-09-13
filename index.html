@@ -405,28 +405,33 @@
         function calculateAutoScale() {
             const n = parseInt(document.getElementById('n-input').value) || 4;
             const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
+            const isMobile = window.innerWidth <= 768;
             
             let scale = 1;
-            const minTickSpacing = 80;
-            const availableWidth = containerWidth - 120;
+            // Use smaller minimum spacing on mobile to prevent over-scaling
+            const minTickSpacing = isMobile ? 60 : 80;
+            const availableWidth = containerWidth - (isMobile ? 80 : 120);
             const requiredWidth = n * minTickSpacing;
             
             if (requiredWidth > availableWidth) {
                 scale = availableWidth / requiredWidth;
             }
             
-            // Consider cash flow value lengths for additional scaling
+            // Consider cash flow value lengths for additional scaling (less aggressive on mobile)
             if (cashFlowValues.size > 0) {
                 const maxValueLength = Math.max(...Array.from(cashFlowValues.values()).map(v => 
                     fmt(parseFloat(v) || 0).length
                 ));
                 
-                if (maxValueLength > 8) {
-                    scale *= Math.max(0.7, 1 - (maxValueLength - 8) * 0.05);
+                if (maxValueLength > (isMobile ? 10 : 8)) {
+                    const scaleFactor = isMobile ? 0.03 : 0.05;
+                    scale *= Math.max(0.8, 1 - (maxValueLength - (isMobile ? 10 : 8)) * scaleFactor);
                 }
             }
             
-            return Math.max(0.3, Math.min(1, scale));
+            // Set higher minimum scale on mobile to keep diagram readable
+            const minScale = isMobile ? 0.6 : 0.3;
+            return Math.max(minScale, Math.min(1, scale));
         }
 
         function applyAutoScale() {
