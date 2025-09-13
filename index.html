@@ -848,7 +848,7 @@
                 } else if (nonZeroCashFlows.length === 1 && currentMode === 'individual') {
                      const [t, v] = nonZeroCashFlows[0];
                      const val = parseFloat(v);
-                     text = `A single payment of ${Math.abs(val).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} at time ${t} is worth ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} when measured at time ${selectedTime} (at ${i}% interest).`;
+                     text = `A single payment of ${Math.abs(val).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} at time ${t} is worth ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} at time ${selectedTime} (at ${i}% interest).`;
                 } else {
                     text = `Considering all cash flows, the total value measured at time ${selectedTime} (at ${i}% interest) is ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.`;
                 }
