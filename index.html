@@ -882,7 +882,25 @@
             input.type = 'number';
             input.className = 'value-input';
             const value = cashFlowValues.get(timeValue);
-            input.value = value ? parseFloat(value).toFixed(2) : '0.00';
+            const num = parseFloat(value) || 0;
+            // Show integers without decimals, others with 2 decimals
+            input.value = nearInt(num) ? Math.round(num).toString() : num.toFixed(2);
+
+            // Smart sizing based on number of periods
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            if (n <= 8) {
+                input.style.width = '60px';
+                input.style.fontSize = '14px';
+            } else if (n <= 15) {
+                input.style.width = '50px';
+                input.style.fontSize = '12px';
+            } else if (n <= 25) {
+                input.style.width = '40px';
+                input.style.fontSize = '11px';
+            } else {
+                input.style.width = '35px';
+                input.style.fontSize = '10px';
+            }
 
             // Set read-only status based on the current mode
             const isCalculatedMode = currentMode === 'loan' || currentMode === 'bond';
