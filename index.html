@@ -403,35 +403,45 @@
 
         // Auto-scaling functions
         function calculateAutoScale() {
-            const n = parseInt(document.getElementById('n-input').value) || 4;
-            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
             const isMobile = window.innerWidth <= 768;
             
-            let scale = 1;
-            // Use smaller minimum spacing on mobile to prevent over-scaling
-            const minTickSpacing = isMobile ? 60 : 80;
-            const availableWidth = containerWidth - (isMobile ? 80 : 120);
-            const requiredWidth = n * minTickSpacing;
-            
-            if (requiredWidth > availableWidth) {
-                scale = availableWidth / requiredWidth;
+            // NO SCALING ON MOBILE - always return 1
+            if (isMobile) {
+                return 1;
             }
             
-            // Consider cash flow value lengths for additional scaling (less aggressive on mobile)
+            // Desktop scaling only
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
+            
+            let scale = 1;
+            
+            // Only scale if we have a really large number of periods on desktop
+            if (n > 20) {
+                const minTickSpacing = 60;
+                const availableWidth = containerWidth - 100;
+                const requiredWidth = n * minTickSpacing;
+                
+                if (requiredWidth > availableWidth) {
+                    scale = availableWidth / requiredWidth;
+                }
+            }
+            
+            // Only consider cash flow lengths for very long numbers on desktop
             if (cashFlowValues.size > 0) {
                 const maxValueLength = Math.max(...Array.from(cashFlowValues.values()).map(v => 
                     fmt(parseFloat(v) || 0).length
                 ));
                 
-                if (maxValueLength > (isMobile ? 10 : 8)) {
-                    const scaleFactor = isMobile ? 0.03 : 0.05;
-                    scale *= Math.max(0.8, 1 - (maxValueLength - (isMobile ? 10 : 8)) * scaleFactor);
+                // Only scale for really long numbers
+                if (maxValueLength > 12) {
+                    const scaleFactor = 0.02; // Very gentle scaling
+                    scale *= Math.max(0.85, 1 - (maxValueLength - 12) * scaleFactor);
                 }
             }
             
-            // Set higher minimum scale on mobile to keep diagram readable
-            const minScale = isMobile ? 0.6 : 0.3;
-            return Math.max(minScale, Math.min(1, scale));
+            // Minimum scale for desktop only
+            return Math.max(0.5, Math.min(1, scale));
         }
 
         function applyAutoScale() {
@@ -850,7 +860,7 @@
                      const val = parseFloat(v);
                      text = `A single payment of ${Math.abs(val).toLocaleString('en-US', { style: 'currency', currency: 'USD' })} at time ${t} is worth ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} at time ${selectedTime} (at ${i}% interest).`;
                 } else {
-                    text = `Considering all cash flows, the total value measured at time ${selectedTime} (at ${i}% interest) is ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.`;
+                    text = `Considering all cash flows, the total value at time ${selectedTime} (at ${i}% interest) is ${resultValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.`;
                 }
             }
             descriptionEl.textContent = text;
