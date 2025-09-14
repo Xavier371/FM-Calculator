@@ -609,12 +609,19 @@
             const i = parseFloat(document.getElementById('i-input').value) / 100;
 
             if (time >= n) return F;
-            if (i <= 0) return F; // For zero/negative rates, return face value
-
+            
             const coupon = F * r;
             const remainingPeriods = n - time;
-            const v = 1 / (1 + i);
             
+            // Handle zero interest rate case correctly
+            if (i === 0) {
+                return coupon * remainingPeriods + F;
+            }
+            
+            // Handle negative rates (shouldn't happen with min=0, but safety check)
+            if (i < 0) return F;
+            
+            const v = 1 / (1 + i);
             const a_remaining_i = (1 - Math.pow(v, remainingPeriods)) / i;
             const price = coupon * a_remaining_i + F * Math.pow(v, remainingPeriods);
 
@@ -1003,6 +1010,37 @@
                     initializeBond();
                 } else {
                     updateAll();
+                }
+            });
+            
+            // Validation only when user finishes editing (prevents negative final values)
+            document.getElementById('i-input').addEventListener('change', (e) => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value) || value < 0) {
+                    e.target.value = '0';
+                    // Trigger update after correction
+                    if (currentMode === 'loan') {
+                        initializeLoan();
+                    } else if (currentMode === 'bond') {
+                        initializeBond();
+                    } else {
+                        updateAll();
+                    }
+                }
+            });
+            
+            document.getElementById('i-input').addEventListener('blur', (e) => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value) || value < 0) {
+                    e.target.value = '0';
+                    // Trigger update after correction
+                    if (currentMode === 'loan') {
+                        initializeLoan();
+                    } else if (currentMode === 'bond') {
+                        initializeBond();
+                    } else {
+                        updateAll();
+                    }
                 }
             });
             
