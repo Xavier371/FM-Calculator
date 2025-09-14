@@ -326,7 +326,7 @@
              <div class="diagram-controls">
                 <div class="param-group">
                     <span>n =</span>
-                    <input type="number" class="param-input" value="4" min="1" max="20" id="n-input">
+                    <input type="number" class="param-input" value="4" min="1" id="n-input">
                 </div>
                 <div class="param-group">
                     <span>i =</span>
@@ -403,45 +403,9 @@
 
         // Auto-scaling functions
         function calculateAutoScale() {
-            const isMobile = window.innerWidth <= 768;
-            
-            // NO SCALING ON MOBILE - always return 1
-            if (isMobile) {
-                return 1;
-            }
-            
-            // Desktop scaling only
-            const n = parseInt(document.getElementById('n-input').value) || 4;
-            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
-            
-            let scale = 1;
-            
-            // Only scale if we have a really large number of periods on desktop
-            if (n > 20) {
-                const minTickSpacing = 60;
-                const availableWidth = containerWidth - 100;
-                const requiredWidth = n * minTickSpacing;
-                
-                if (requiredWidth > availableWidth) {
-                    scale = availableWidth / requiredWidth;
-                }
-            }
-            
-            // Only consider cash flow lengths for very long numbers on desktop
-            if (cashFlowValues.size > 0) {
-                const maxValueLength = Math.max(...Array.from(cashFlowValues.values()).map(v => 
-                    fmt(parseFloat(v) || 0).length
-                ));
-                
-                // Only scale for really long numbers
-                if (maxValueLength > 12) {
-                    const scaleFactor = 0.02; // Very gentle scaling
-                    scale *= Math.max(0.85, 1 - (maxValueLength - 12) * scaleFactor);
-                }
-            }
-            
-            // Minimum scale for desktop only
-            return Math.max(0.5, Math.min(1, scale));
+            // NO SCALING - always return 1 to maintain consistent diagram size
+            // The time diagram should NEVER be resized on phones or computers
+            return 1;
         }
 
         function applyAutoScale() {
