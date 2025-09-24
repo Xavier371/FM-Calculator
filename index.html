@@ -881,7 +881,7 @@
                 const nonZeroCashFlows = Array.from(cashFlowValues.entries()).filter(([t, v]) => parseFloat(v) !== 0);
                 
                 if (nonZeroCashFlows.length === 0) {
-                    text = `With no money changing hands, the net value is always $0.00.`;
+                    text = `With no cash flows, the present value is always $0.00.`;
                 } else if (nonZeroCashFlows.length === 1 && currentMode === 'individual') {
                      const [t, v] = nonZeroCashFlows[0];
                      const val = parseFloat(v);
