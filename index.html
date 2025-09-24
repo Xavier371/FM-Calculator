@@ -533,24 +533,28 @@
             const endDateInput = document.getElementById('end-date-input');
             let n = parseInt(nInput.value) || 4;
             let endDate = parseInt(endDateInput.value) || 3;
-
+        
             // Auto-increase n if endDate is larger
             if (endDate > n) {
                 n = endDate;
                 nInput.value = n;
             }
-            
-            const amount = parseFloat(document.getElementById('amount-input').value) || 1;
+        
+            // Preserve 0; only default to 1 if the field is NaN/empty
+            let amount = Number(document.getElementById('amount-input').value);
+            if (Number.isNaN(amount)) amount = 1;
+        
             const startDate = parseInt(document.getElementById('start-date-input').value) || 1;
-
+        
             cashFlowValues.clear();
             for (let i = 0; i <= n; i++) {
                 const value = (i >= startDate && i <= endDate) ? amount : 0;
                 cashFlowValues.set(i, value);
             }
-            
+        
             updateTicks();
         }
+
         
         function initializeLoan() {
             const L_input = parseFloat(document.getElementById('loan-amount-input').value) || -1000;
