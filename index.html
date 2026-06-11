@@ -657,10 +657,6 @@
             <div class="pv-calculation">
                 <div class="title">Present Value at Selected Time</div>
                 <div class="result" id="pv-result">PV<span class="subscript">0</span> = 0.00</div>
-                <div id="annuity-sv-row" style="display:none; margin-top:14px; padding-top:12px; border-top:1px solid #e0e0e0;">
-                    <div class="title">Future Value (end of annuity)</div>
-                    <div class="result" id="sv-result"></div>
-                </div>
             </div>
             <div class="graph-container">
                 <canvas id="pvGraph"></canvas>
@@ -1139,44 +1135,15 @@
 
         function updateCalculationDisplay() {
             const resultDiv = document.getElementById('pv-result');
-            const svRow     = document.getElementById('annuity-sv-row');
-            const svResult  = document.getElementById('sv-result');
-
             if (currentMode === 'loan') {
                 const balance = calculateBalance(selectedTime);
                 resultDiv.innerHTML = `B<span class="subscript">${selectedTime}</span> = ${fmt(balance)}`;
-                svRow.style.display = 'none';
             } else if (currentMode === 'bond') {
                 const price = calculatePrice(selectedTime);
                 resultDiv.innerHTML = `P<span class="subscript">${selectedTime}</span> = ${fmt(price)}`;
-                svRow.style.display = 'none';
-            } else if (currentMode === 'annuity') {
-                const pv = calculatePV(selectedTime);
-                resultDiv.innerHTML = `PV<span class="subscript">${selectedTime}</span> = ${fmt(pv)}`;
-                // Compute s_n (FV) for the annuity
-                const i         = parseFloat(document.getElementById('i-input').value) / 100;
-                const iPct      = parseFloat(document.getElementById('i-input').value);
-                const C         = Number(document.getElementById('amount-input').value) || 1;
-                const startDate = parseInt(document.getElementById('start-date-input').value) || 1;
-                const endDate   = parseInt(document.getElementById('end-date-input').value)   || 3;
-                const p         = Math.max(endDate - startDate + 1, 0);
-                const due       = startDate === 0;
-                let sv;
-                if (i === 0) {
-                    sv = C * p * (due ? 1 : 1);
-                } else {
-                    const s_imm = (Math.pow(1 + i, p) - 1) / i;
-                    sv = C * (due ? s_imm * (1 + i) : s_imm);
-                }
-                const sLabel = due
-                    ? katex.renderToString(`\\ddot{s}_{\\overline{${p}}\\,|\\,${iPct}\\%}`, { throwOnError: false })
-                    : katex.renderToString(`s_{\\overline{${p}}\\,|\\,${iPct}\\%}`, { throwOnError: false });
-                svResult.innerHTML = `${sLabel} &middot; ${C} = ${fmt(sv)}`;
-                svRow.style.display = '';
             } else {
                 const pv = calculatePV(selectedTime);
                 resultDiv.innerHTML = `PV<span class="subscript">${selectedTime}</span> = ${fmt(pv)}`;
-                svRow.style.display = 'none';
             }
         }
 
@@ -1541,11 +1508,11 @@
         }
 
         function resetToDefaults() {
-            document.getElementById('n-input').value = 4;
+            const n = parseInt(document.getElementById('n-input').value) || 4;
             document.getElementById('i-input').value = 10;
-            if (isGameMode && currentMode === 'individual') {
+            if (currentMode === 'individual') {
                 cashFlowValues.clear();
-                for (let t = 0; t <= 4; t++) cashFlowValues.set(t, 0);
+                for (let t = 0; t <= n; t++) cashFlowValues.set(t, 0);
                 updateTicks();
                 return;
             }
