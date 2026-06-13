@@ -1535,12 +1535,12 @@
 
         function refreshQuestion() {
             document.getElementById('calc-body').classList.remove('solved');
-            handleModeChange('individual');
             const rand = Math.random();
             if (rand < 0.50)       currentQuestion = genIndividual();
             else if (rand < 0.667) currentQuestion = genAnnuity();
             else if (rand < 0.833) currentQuestion = genLoan();
             else                   currentQuestion = genBond();
+            handleModeChange(currentQuestion.calcState.mode);
             renderQuestion(currentQuestion);
         }
 
