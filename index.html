@@ -314,7 +314,7 @@
         .refresh-btn:hover { background: #1a237e; }
 
         .question-text {
-            font-size: 15px;
+            font-size: 17px;
             color: #1a237e;
             margin-bottom: 12px;
             line-height: 1.55;
@@ -344,6 +344,36 @@
         .option-btn.correct  { background: #e8f5e9 !important; border-color: #43a047 !important; color: #1b5e20 !important; font-weight: bold; }
         .option-btn.incorrect { background: #ffebee !important; border-color: #e53935 !important; color: #b71c1c !important; }
         .option-btn:disabled { cursor: not-allowed; }
+
+        /* ===== QUESTION + OPTIONS SIDE-BY-SIDE ===== */
+        .question-options-row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .question-options-row .question-text {
+            flex: 1 1 0;
+            min-width: 0;
+            margin-bottom: 0;
+        }
+        .question-options-row .options-grid {
+            flex: 0 0 200px;
+            width: 200px;
+            margin-bottom: 0;
+            grid-template-columns: 1fr 1fr;
+        }
+        @media (max-width: 480px) {
+            .question-options-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .question-options-row .options-grid {
+                flex: unset;
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
 
         .game-feedback {
             font-size: 14px;
@@ -424,6 +454,62 @@
         .sol-eq  { text-align: center; padding: 0 7px; white-space: nowrap; }
         .sol-rhs { padding-left: 2px; }
         .sol-ans { font-weight: bold; }
+
+        /* ===================== HELP BUTTON ===================== */
+        .time-diagram-container { position: relative; }
+        .help-btn {
+            position: absolute;
+            top: 12px; right: 14px;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            background: #e8eaf6;
+            border: 1.5px solid #9fa8da;
+            color: #3949ab;
+            font-size: 14px; font-weight: 700;
+            cursor: pointer; min-width: unset; padding: 0;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.12s; line-height: 1;
+        }
+        .help-btn:hover { background: #c5cae9; }
+
+        /* ===================== HELP MODAL ===================== */
+        .help-content { width: min(96%, 640px); max-height: 88vh; }
+        .help-content h2 { margin: 0 0 4px; color: #1a237e; font-size: 20px; }
+        .help-subtitle { font-size: 13px; color: #888; font-style: italic; margin: 0 0 18px; }
+        .help-section { margin-bottom: 16px; }
+        .help-section h3 {
+            font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+            text-transform: uppercase; color: #5c6bc0;
+            margin: 0 0 6px; padding-bottom: 4px; border-bottom: 1px solid #e8eaf6;
+        }
+        .help-section p, .help-section li { font-size: 14px; color: #333; line-height: 1.6; margin: 0 0 4px; }
+        .help-section ul { margin: 4px 0 0 18px; padding: 0; }
+
+        /* ===================== CALC BODY (controls + diagram wrapper) ===================== */
+        #calc-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Solved/locked state: controls swap to bottom, both dim --- */
+        #calc-body.solved .diagram-controls {
+            order: 1;
+            border-bottom: none;
+            border-top: 1px solid #e0e0e0;
+            margin-bottom: 0;
+            margin-top: 0;
+            padding-top: 16px;
+            padding-bottom: 4px;
+            pointer-events: none;
+            opacity: 0.45;
+        }
+        #calc-body.solved .diagram {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        #calc-body.solved .diagram-header {
+            order: 0; /* stays above diagram */
+        }
 
         /* ===================== DIAGRAM RESET BUTTON ===================== */
         .diagram-header {
@@ -512,8 +598,10 @@
             .graph-container { height: 250px; }
             .app-title { font-size: 18px; margin-bottom: 10px; }
             .game-panel { padding: 10px 12px 10px; margin-bottom: 16px; }
-            .question-text { font-size: 13px; }
-            .options-grid { grid-template-columns: 1fr; gap: 6px; }
+            .question-text { font-size: 15px; }
+            .options-grid { gap: 6px; }
+            .question-options-row { gap: 10px; }
+            .question-options-row .options-grid { flex: 0 0 170px; width: 170px; }
             .option-btn { font-size: 13px; padding: 8px 10px; }
             .game-feedback { font-size: 13px; }
             .sol-table { font-size: 12px; }
@@ -558,7 +646,7 @@
             .pv-calculation .result { font-size: 20px; }
             .sol-table { font-size: 12px; }
             .game-panel { padding: 10px 14px; margin-bottom: 14px; }
-            .question-text { font-size: 13px; }
+            .question-text { font-size: 15px; }
             .modal { padding: 8px; }
             .modal-content { padding: 16px 14px; }
             .formula-ref-content { max-height: 92vh; }
@@ -573,7 +661,7 @@
     <div class="container">
         <h2 class="app-title">Financial Math Calculator</h2>
         <div class="nav-buttons">
-            <button id="btn-individual" onclick="handleModeChange('individual')">Individual Payments</button>
+            <button id="btn-individual" onclick="location.reload()">Individual Payments</button>
             <button id="btn-annuity" onclick="handleModeChange('annuity')">Annuities</button>
             <button id="btn-loan" onclick="handleModeChange('loan')">Loans</button>
             <button id="btn-bond" onclick="handleModeChange('bond')">Bonds</button>
@@ -581,14 +669,17 @@
         </div>
 
         <div class="time-diagram-container">
+            <button class="help-btn" onclick="showHelp()" title="Instructions">?</button>
             <!-- Game Mode Panel -->
             <div id="game-panel" class="game-panel">
                 <div class="game-header">
                     <span class="game-category-badge" id="game-category">—</span>
                     <button class="refresh-btn" onclick="refreshQuestion()">↻ New Question</button>
                 </div>
-                <div class="question-text" id="question-text"></div>
-                <div class="options-grid" id="options-grid"></div>
+                <div class="question-options-row">
+                    <div class="question-text" id="question-text"></div>
+                    <div class="options-grid" id="options-grid"></div>
+                </div>
                 <div class="game-feedback" id="game-feedback"></div>
                 <div class="solution-box" id="solution-box">
                     <div class="solution-header">
@@ -599,6 +690,7 @@
                 </div>
             </div>
 
+            <div id="calc-body">
              <div class="diagram-controls">
                 <div class="param-group">
                     <span>n =</span>
@@ -651,6 +743,7 @@
                     <!-- Ticks will be generated by JavaScript -->
                 </div>
             </div>
+            </div><!-- end #calc-body -->
 
             <div id="dynamic-description" class="dynamic-description"></div>
 
@@ -660,6 +753,59 @@
             </div>
             <div class="graph-container">
                 <canvas id="pvGraph"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help / Instructions Modal -->
+    <div id="helpModal" class="modal" onclick="if(event.target===this)closeHelp()">
+        <div class="modal-content help-content">
+            <div class="formula-ref-header">
+                <div>
+                    <h2>How to Use This Calculator</h2>
+                    <p class="help-subtitle">A guide for students at any level &mdash; from a financial mathematics perspective</p>
+                </div>
+                <button class="formula-close-btn" onclick="closeHelp()">&#215;</button>
+            </div>
+
+            <div class="help-section">
+                <h3>The Time Diagram</h3>
+                <p>The horizontal line represents time, measured in periods (typically years). Each tick mark is a point in time. Cash flows — amounts of money received or paid — appear above the line as editable values. Click any tick to designate it as your reference point; the calculator immediately shows the value of all cash flows measured at that moment.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>Interest Rate (i) and n</h3>
+                <p><strong>i</strong> is the annual effective interest rate: the rate at which money grows over one period. A dollar today is worth more than a dollar in the future — this is the <em>time value of money</em>. Raising <em>i</em> increases future values and decreases present values.</p>
+                <p><strong>n</strong> is the total number of time periods on the diagram. Increase it to model longer horizons.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>Calculator Modes</h3>
+                <ul>
+                    <li><strong>Individual Payments</strong> — Enter any cash flow at any tick. Model single or multiple payments freely. Ideal for exploring how isolated amounts move through time.</li>
+                    <li><strong>Annuities</strong> — A sequence of equal, evenly-spaced payments. Set the payment amount, start period, and end period. The calculator shows the present value of the entire stream.</li>
+                    <li><strong>Loans</strong> — Models a level-payment amortizing loan. Provide the loan amount and term; the tool derives the equal periodic payment and tracks the outstanding balance at any point.</li>
+                    <li><strong>Bonds</strong> — A bond pays periodic coupons plus a lump-sum face value at maturity. Enter the face value, coupon rate, and desired yield to compute the fair price.</li>
+                </ul>
+            </div>
+
+            <div class="help-section">
+                <h3>The Graph</h3>
+                <p>Displays how the selected quantity (present value, loan balance, or bond price) changes across all time points. This is a direct visual representation of the time value of money in action — notice how values shift as you move money forward or backward in time.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>Game Mode</h3>
+                <p>Test your understanding with randomly generated, exam-style multiple-choice problems drawn from all four topics. After selecting an answer, a complete step-by-step solution is shown in standard actuarial notation. Use the <em>Formulas</em> button for a concise reference sheet, and <em>New Question</em> to move on.</p>
+            </div>
+
+            <div class="help-section">
+                <h3>The Reset Button (↺)</h3>
+                <p>Resets the current mode's parameters to their defaults without changing the number of periods <em>n</em>. In Individual Payments mode, it zeros all cash flows so you can start fresh.</p>
+            </div>
+
+            <div style="text-align:center; margin-top:18px">
+                <button onclick="closeHelp()" style="min-width:100px">Close</button>
             </div>
         </div>
     </div>
@@ -687,10 +833,10 @@
         // Smart number formatter: integers → no decimals; others → 2 decimals, with commas
         const nearInt = (x, eps = 1e-9) => Math.abs(Math.round(x) - x) < eps;
         const fmt = (x) => {
-            const n = Number(x);
+            const n = Number(x) || 0; // converts -0 and NaN to 0
             if (!Number.isFinite(n)) return '0';
-            return nearInt(n) 
-                ? Math.round(n).toLocaleString() 
+            return nearInt(n)
+                ? Math.round(n).toLocaleString()
                 : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
@@ -988,7 +1134,7 @@
             
             for (let t = 0; t <= n; t++) {
                 labels.push(t);
-                pvData.push(parseFloat(calculatePV(t)));
+                pvData.push(parseFloat(calculatePV(t).toFixed(10)) || 0);
             }
 
             const ctx = document.getElementById('pvGraph').getContext('2d');
@@ -1096,7 +1242,7 @@
 
             for (let t = 0; t <= n; t++) {
                 labels.push(t);
-                priceData.push(calculatePrice(t));
+                priceData.push(parseFloat(calculatePrice(t).toFixed(10)) || 0);
             }
             
             const ctx = document.getElementById('pvGraph').getContext('2d');
@@ -1360,6 +1506,7 @@
             updateTicks();
             handleModeChange('individual');
             buildFormulaRef();
+            toggleGameMode();
         });
 
         // ===================== GAME MODE =====================
@@ -1387,6 +1534,8 @@
         }
 
         function refreshQuestion() {
+            document.getElementById('calc-body').classList.remove('solved');
+            handleModeChange('individual');
             const rand = Math.random();
             if (rand < 0.50)       currentQuestion = genIndividual();
             else if (rand < 0.667) currentQuestion = genAnnuity();
@@ -1425,6 +1574,7 @@
         function checkAnswer(selected, correct) {
             if (questionAnswered) return;
             questionAnswered = true;
+            document.getElementById('calc-body').classList.add('solved');
             const feedback = document.getElementById('game-feedback');
             document.querySelectorAll('.option-btn').forEach(btn => {
                 btn.disabled = true;
@@ -1453,12 +1603,54 @@
         const annTeX  = (n, iPct) => `a_{\\overline{${n}}\\,|\\,${iPct}\\%}`;
         const annDTeX = (n, iPct) => `\\ddot{a}_{\\overline{${n}}\\,|\\,${iPct}\\%}`;
 
+        function applyCalcState(s) {
+            document.getElementById('n-input').value = s.n;
+            document.getElementById('i-input').value = s.i;
+            selectedTime = s.evalTime;
+
+            if (s.mode === 'individual') {
+                cashFlowValues.clear();
+                for (let t = 0; t <= s.n; t++) {
+                    cashFlowValues.set(t, s.cashFlows[t] !== undefined ? s.cashFlows[t] : 0);
+                }
+                currentMode = 'individual';
+                document.querySelectorAll('.nav-buttons button').forEach(b => b.classList.remove('active'));
+                document.getElementById('btn-individual').classList.add('active');
+                document.querySelectorAll('.annuity-param, .loan-param, .bond-param').forEach(el => el.style.display = 'none');
+                document.querySelector('.pv-calculation > .title').textContent = 'Present Value at Selected Time';
+                updateTicks();
+            } else {
+                if (s.mode === 'annuity') {
+                    document.getElementById('amount-input').value = s.amount;
+                    document.getElementById('start-date-input').value = s.startDate;
+                    document.getElementById('end-date-input').value = s.endDate;
+                } else if (s.mode === 'loan') {
+                    document.getElementById('loan-amount-input').value = s.loanAmount;
+                } else if (s.mode === 'bond') {
+                    document.getElementById('face-value-input').value = s.faceValue;
+                    document.getElementById('coupon-rate-input').value = s.couponRate;
+                }
+                handleModeChange(s.mode);
+                // Re-apply evalTime after handleModeChange recreates ticks
+                selectedTime = s.evalTime;
+                document.querySelectorAll('.tick-point').forEach((p, idx) => {
+                    p.classList.toggle('selected', idx === s.evalTime);
+                });
+                updateCalculationDisplay();
+                updateDynamicDescription();
+                updateGraph();
+            }
+        }
+
         function showSolution(q) {
             if (!q || !q.solution) return;
             document.getElementById('solution-body').innerHTML = q.solution;
             document.getElementById('solution-box').classList.add('visible');
+            if (q.calcState) applyCalcState(q.calcState);
         }
 
+        function showHelp()        { document.getElementById('helpModal').classList.add('open'); }
+        function closeHelp()       { document.getElementById('helpModal').classList.remove('open'); }
         function showFormulaRef()  { document.getElementById('formulaModal').classList.add('open'); }
         function closeFormulaRef() { document.getElementById('formulaModal').classList.remove('open'); }
 
@@ -1508,6 +1700,7 @@
         }
 
         function resetToDefaults() {
+            document.getElementById('calc-body').classList.remove('solved');
             const n = parseInt(document.getElementById('n-input').value) || 4;
             document.getElementById('i-input').value = 10;
             if (currentMode === 'individual') {
@@ -1519,7 +1712,7 @@
             if (currentMode === 'annuity') {
                 document.getElementById('amount-input').value = 1;
                 document.getElementById('start-date-input').value = 1;
-                document.getElementById('end-date-input').value = 3;
+                document.getElementById('end-date-input').value = Math.min(3, n);
             } else if (currentMode === 'loan') {
                 document.getElementById('loan-amount-input').value = -1000;
             } else if (currentMode === 'bond') {
@@ -1559,12 +1752,48 @@
         }
 
         // ── Question generators ──
+        const avPhrases = [
+            (C,t1,t2,iPct) => `An account contains $${C} at time ${t1}. At an annual effective interest rate of ${iPct}%, determine the accumulated value at time ${t2}.`,
+            (C,t1,t2,iPct) => `A deposit of $${C} is made at time ${t1} into an account earning ${iPct}% per year, effective. What is the account balance at time ${t2}?`,
+            (C,t1,t2,iPct) => `$${C} is invested at time ${t1} at an annual effective rate of ${iPct}%. Find its value ${t2-t1} year${t2-t1>1?'s':''} later.`,
+        ];
+        const pvPhrases = [
+            (C,t1,t2,iPct) => `What lump sum at time ${t1} is equivalent to a payment of $${C} due at time ${t2}, given an annual effective interest rate of ${iPct}%?`,
+            (C,t1,t2,iPct) => `At an annual effective rate of ${iPct}%, determine the present value at time ${t1} of an obligation of $${C} due at time ${t2}.`,
+            (C,t1,t2,iPct) => `An investor wishes to receive $${C} at time ${t2}. How much must be deposited at time ${t1} at ${iPct}% annual effective interest?`,
+        ];
+        const immPhrases = [
+            (C,n,iPct) => `An annuity pays $${C} at the end of each year for ${n} years. At an annual effective interest rate of ${iPct}%, find the present value at time 0.`,
+            (C,n,iPct) => `A series of ${n} annual end-of-year payments of $${C} each is made into a fund earning ${iPct}% per year. Determine the value of this annuity at the time of the first payment's valuation (time 0).`,
+            (C,n,iPct) => `Calculate the present value of ${n} end-of-period payments of $${C}, discounted at an annual effective rate of ${iPct}%.`,
+        ];
+        const duePhrases = [
+            (C,n,iPct) => `An annuity pays $${C} at the beginning of each year for ${n} years. At an annual effective interest rate of ${iPct}%, find the present value at time 0.`,
+            (C,n,iPct) => `A series of ${n} annual beginning-of-year payments of $${C} each is valued at ${iPct}% annual effective interest. Determine the present value.`,
+            (C,n,iPct) => `Determine the present value of ${n} start-of-period payments of $${C} each, at an annual effective rate of ${iPct}%.`,
+        ];
+        const loanPayPhrases = [
+            (L,n,iPct) => `A loan of $${L.toLocaleString()} is to be repaid with equal annual payments over ${n} years at an annual effective interest rate of ${iPct}%. Find the level annual payment.`,
+            (L,n,iPct) => `A borrower takes out a $${L.toLocaleString()} loan at ${iPct}% annual effective interest, to be repaid with ${n} equal end-of-year installments. Determine each payment.`,
+            (L,n,iPct) => `What level annual payment will fully amortize a $${L.toLocaleString()} loan over ${n} years at an annual effective rate of ${iPct}%?`,
+        ];
+        const loanBalPhrases = [
+            (L,n,iPct,t) => `A $${L.toLocaleString()} loan at ${iPct}% annual effective interest is repaid with equal annual payments over ${n} years. Find the outstanding balance immediately after the ${t}${['th','st','nd','rd'][t<4?t:0]||'th'} payment.`,
+            (L,n,iPct,t) => `A borrower repays a $${L.toLocaleString()} loan with level end-of-year payments over ${n} years at ${iPct}% annual effective interest. What is the remaining principal after ${t} year${t>1?'s':''}?`,
+            (L,n,iPct,t) => `A $${L.toLocaleString()}, ${n}-year loan at ${iPct}% annual effective interest is amortized with equal annual payments. Determine the prospective loan balance at time ${t}.`,
+        ];
+        const bondPhrases = [
+            (coupon,n,F,iPct) => `A bond with face amount $${F} pays annual coupons of $${coupon} and matures in ${n} years. At an annual yield rate of ${iPct}%, determine the price of this bond.`,
+            (coupon,n,F,iPct) => `An investor requires a ${iPct}% annual effective return. A bond promises $${coupon} at the end of each of ${n} years, plus a lump-sum redemption of $${F} at maturity. What is the fair price?`,
+            (coupon,n,F,iPct) => `Calculate the price of a ${n}-year bond with $${F} face value and annual coupon payments of $${coupon}, to yield ${iPct}% annually.`,
+        ];
+
         function genIndividual() {
             const iPct = pick([3,4,5,6,7,8,9,10,12,15]);
             const i    = iPct / 100;
-            const C    = pick([50,75,100,125,150,200,250,300,400,500]);
+            const C    = pick([50,75,100,125,150,200,250,300,400,500,750,1000]);
             const t1   = rInt(0, 5);
-            const n    = rInt(2, 7);
+            const n    = rInt(1, 8);
             const t2   = t1 + n;
             const rate = (1 + i).toFixed(2);
             if (Math.random() < 0.5) {
@@ -1572,8 +1801,9 @@
                 const correct = r2(C * Math.pow(1 + i, n));
                 return {
                     category: 'Individual Payments',
-                    question: `A payment of ${C} is made at time ${t1}. At ${iPct}% annual interest, what is it worth at time ${t2}?`,
+                    question: pick(avPhrases)(C, t1, t2, iPct),
                     correct,
+                    calcState: { mode: 'individual', n: t2, i: iPct, evalTime: t2, cashFlows: { [t1]: C } },
                     solution: texD(`\\begin{aligned} AV &= C(1+i)^n \\\\ &= ${C}(${rate})^{${n}} \\\\ &= ${C} \\cdot ${factor} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             } else {
@@ -1581,8 +1811,9 @@
                 const correct = r2(C / Math.pow(1 + i, n));
                 return {
                     category: 'Individual Payments',
-                    question: `How much would you need to invest at time ${t1} to receive ${C} at time ${t2}, assuming ${iPct}% annual interest?`,
+                    question: pick(pvPhrases)(C, t1, t2, iPct),
                     correct,
+                    calcState: { mode: 'individual', n: t2, i: iPct, evalTime: t1, cashFlows: { [t2]: C } },
                     solution: texD(`\\begin{aligned} PV &= Cv^n \\\\ &= ${C}(${rate})^{-${n}} \\\\ &= ${C} \\cdot ${vn} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             }
@@ -1591,29 +1822,30 @@
         function genAnnuity() {
             const iPct   = pick([4,5,6,7,8,9,10,12]);
             const i      = iPct / 100;
-            const C      = pick([50,75,100,150,200,250]);
-            const n      = rInt(3, 8);
+            const C      = pick([50,75,100,150,200,250,500]);
+            const n      = rInt(3, 10);
             const v      = 1 / (1 + i);
             const a_n    = (1 - Math.pow(v, n)) / i;
             const due    = Math.random() < 0.5;
             const rate   = (1 + i).toFixed(2);
-            const vn     = r4(Math.pow(v, n));
             const factor = r4(a_n);
             if (due) {
                 const dueFactor = r4(a_n * (1 + i));
                 const correct   = r2(C * a_n * (1 + i));
                 return {
                     category: 'Annuities',
-                    question: `Payments of ${C} are made at the start of each period for ${n} periods. At ${iPct}% interest per period, what is their combined value at time 0?`,
+                    question: pick(duePhrases)(C, n, iPct),
                     correct,
+                    calcState: { mode: 'annuity', n: n, i: iPct, evalTime: 0, amount: C, startDate: 0, endDate: n - 1 },
                     solution: texD(`\\begin{aligned} ${annTeX(n,iPct)} &= \\frac{1-(${rate})^{-${n}}}{${i.toFixed(2)}} = ${factor} \\\\ ${annDTeX(n,iPct)} &= (1+i)\\cdot {}${annTeX(n,iPct)} = ${rate}\\cdot${factor} = ${dueFactor} \\\\ PV &= ${C}\\cdot {}${annDTeX(n,iPct)} \\\\ &= ${C}\\cdot${dueFactor} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             } else {
                 const correct = r2(C * a_n);
                 return {
                     category: 'Annuities',
-                    question: `Payments of ${C} are made at the end of each period for ${n} periods. At ${iPct}% interest per period, what is their combined value at time 0?`,
+                    question: pick(immPhrases)(C, n, iPct),
                     correct,
+                    calcState: { mode: 'annuity', n: n, i: iPct, evalTime: 0, amount: C, startDate: 1, endDate: n },
                     solution: texD(`\\begin{aligned} ${annTeX(n,iPct)} &= \\frac{1-(${rate})^{-${n}}}{${i.toFixed(2)}} = ${factor} \\\\ PV &= ${C}\\cdot {}${annTeX(n,iPct)} \\\\ &= ${C}\\cdot${factor} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             }
@@ -1622,15 +1854,13 @@
         function genLoan() {
             const iPct     = pick([4,5,6,7,8,9,10,12]);
             const i        = iPct / 100;
-            const L        = pick([500,1000,1500,2000,2500,3000,5000]);
-            const n        = rInt(3, 8);
+            const L        = pick([500,1000,1500,2000,2500,3000,5000,8000,10000]);
+            const n        = rInt(3, 10);
             const v        = 1 / (1 + i);
             const a_n      = (1 - Math.pow(v, n)) / i;
             const R        = L / a_n;
             const rate     = (1 + i).toFixed(2);
-            const vn       = r4(Math.pow(v, n));
             const factor_n = r4(a_n);
-            const R_disp   = fmt(r2(R));
             if (n > 3 && Math.random() < 0.5) {
                 const t        = rInt(1, n - 1);
                 const rem      = n - t;
@@ -1639,16 +1869,18 @@
                 const correct  = r2(R * a_r);
                 return {
                     category: 'Loans',
-                    question: `A loan of ${L.toLocaleString()} is paid off with equal end-of-period payments over ${n} periods at ${iPct}% annual interest. How much is still owed after ${t} payment${t > 1 ? 's' : ''}?`,
+                    question: pick(loanBalPhrases)(L, n, iPct, t),
                     correct,
+                    calcState: { mode: 'loan', n: n, i: iPct, evalTime: t, loanAmount: -L },
                     solution: texD(`\\begin{aligned} K &= \\frac{${numTex(L)}}{${annTeX(n,iPct)}} = ${numTex(r2(R))} \\\\ ${annTeX(rem,iPct)} &= \\frac{1-(${rate})^{-${rem}}}{${i.toFixed(2)}} = ${factor_r} \\\\ B_{${t}} &= K\\cdot {}${annTeX(rem,iPct)} \\\\ &= ${numTex(r2(R))}\\cdot${factor_r} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             } else {
                 const correct = r2(R);
                 return {
                     category: 'Loans',
-                    question: `A loan of ${L.toLocaleString()} is paid off with equal end-of-period payments over ${n} periods at ${iPct}% annual interest. How much is each payment?`,
+                    question: pick(loanPayPhrases)(L, n, iPct),
                     correct,
+                    calcState: { mode: 'loan', n: n, i: iPct, evalTime: 0, loanAmount: -L },
                     solution: texD(`\\begin{aligned} ${annTeX(n,iPct)} &= \\frac{1-(${rate})^{-${n}}}{${i.toFixed(2)}} = ${factor_n} \\\\ K &= \\frac{L}{${annTeX(n,iPct)}} = \\frac{${numTex(L)}}{${factor_n}} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
                 };
             }
@@ -1657,22 +1889,22 @@
         function genBond() {
             const iPct     = pick([4,5,6,7,8,9,10,12]);
             const i        = iPct / 100;
-            const rPct     = pick([4,5,6,7,8,9,10]);
+            const rPct     = pick([3,4,5,6,7,8,9,10,12]);
             const F        = pick([100,500,1000]);
-            const n        = rInt(3, 8);
+            const n        = rInt(3, 15);
             const v        = 1 / (1 + i);
             const a_n      = (1 - Math.pow(v, n)) / i;
             const coupon   = r2(F * rPct / 100);
             const rate     = (1 + i).toFixed(2);
-            const vn       = r4(Math.pow(v, n));
             const factor   = r4(a_n);
             const couponPV = r4(coupon * a_n);
             const faceDisc = r4(F * Math.pow(v, n));
             const correct  = r2(coupon * a_n + F * Math.pow(v, n));
             return {
                 category: 'Bonds',
-                question: `An investment pays ${coupon} at the end of each of ${n} periods, then pays back ${F} at the very end. If you want a ${iPct}% annual return, what should you pay for it today?`,
+                question: pick(bondPhrases)(coupon, n, F, iPct),
                 correct,
+                calcState: { mode: 'bond', n: n, i: iPct, evalTime: 0, faceValue: F, couponRate: rPct },
                 solution: texD(`\\begin{aligned} ${annTeX(n,iPct)} &= \\frac{1-(${rate})^{-${n}}}{${i.toFixed(2)}} = ${factor} \\\\ P &= Fr\\cdot {}${annTeX(n,iPct)} + Cv^{${n}} \\\\ &= ${coupon}\\cdot${factor} + ${F}\\cdot(${rate})^{-${n}} \\\\ &= ${couponPV} + ${faceDisc} \\\\ &= \\boxed{${numTex(correct)}} \\end{aligned}`)
             };
         }
