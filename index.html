@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -363,18 +364,6 @@
             margin-bottom: 0;
             grid-template-columns: 1fr 1fr;
         }
-        @media (max-width: 480px) {
-            .question-options-row {
-                flex-direction: column;
-                gap: 8px;
-            }
-            .question-options-row .options-grid {
-                flex: unset;
-                width: 100%;
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
         .game-feedback {
             font-size: 14px;
             font-style: italic;
@@ -655,6 +644,64 @@
         /* --- KaTeX overflow safety --- */
         .katex-solution, .formula-card-math { overflow-x: auto; max-width: 100%; }
         .katex-display { overflow-x: auto; overflow-y: hidden; }
+
+        /* --- Portrait phones (≤ 480px) — must come AFTER the 768px block --- */
+        @media (max-width: 480px) {
+            body { margin: 6px; }
+            .container { padding: 6px; }
+            .app-title { font-size: 17px; margin-bottom: 8px; }
+
+            /* Nav buttons: let them shrink and fill width naturally */
+            button { min-width: 0; padding: 8px 10px; font-size: 12px; }
+            .nav-buttons { gap: 4px; }
+
+            /* Game panel */
+            .game-panel { padding: 10px 10px 8px; }
+            .game-header { gap: 6px; }
+
+            /* Question + MC options: stack vertically */
+            .question-options-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .question-options-row .question-text {
+                font-size: 15px;
+                line-height: 1.5;
+                margin-bottom: 0;
+            }
+            /* Override the 768px side-by-side width so options fill the row */
+            .question-options-row .options-grid {
+                flex: unset;
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+                margin-bottom: 0;
+            }
+            .option-btn { font-size: 13px; padding: 10px 8px; }
+            .options-grid { gap: 8px; }
+
+            /* Solution / feedback */
+            .game-feedback { font-size: 13px; }
+            .solution-box { padding: 8px 10px; }
+            .sol-table { font-size: 12px; }
+
+            /* Calculator section */
+            .time-diagram-container { padding: 14px 10px; }
+            .diagram-controls {
+                gap: 8px;
+                padding-bottom: 12px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .param-group span { font-size: 12px; }
+            .param-input { width: 38px; font-size: 11px; }
+            #type-select { width: 58px; }
+            .diagram { height: 90px; padding: 0 12px; }
+            .value-input { width: 44px; font-size: 11px; top: -28px; }
+            .time-label { font-size: 12px; bottom: -28px; }
+            .pv-calculation { font-size: 15px; margin: 20px 0; padding: 14px; }
+            .pv-calculation .result { font-size: 19px; }
+            .graph-container { height: 210px; }
+        }
     </style>
 </head>
 <body>
@@ -763,40 +810,35 @@
             <div class="formula-ref-header">
                 <div>
                     <h2>How to Use This Calculator</h2>
-                    <p class="help-subtitle">A guide for students at any level &mdash; from a financial mathematics perspective</p>
+                    <p class="help-subtitle">A guide for learning the intuition behind financial math for students at any level.</p>
                 </div>
                 <button class="formula-close-btn" onclick="closeHelp()">&#215;</button>
             </div>
 
             <div class="help-section">
                 <h3>The Time Diagram</h3>
-                <p>The horizontal line represents time, measured in periods (typically years). Each tick mark is a point in time. Cash flows — amounts of money received or paid — appear above the line as editable values. Click any tick to designate it as your reference point; the calculator immediately shows the value of all cash flows measured at that moment.</p>
+                <p>The horizontal line represents time, measured in periods (typically years). Each tick mark is a point in time. Cash flows &mdash; amounts of money received or paid &mdash; appear above each unit of time as a value you can edit. Click any tick to designate it as your valuation point; the calculator will show the value of all cash flows at that point in time.</p>
             </div>
 
             <div class="help-section">
                 <h3>Interest Rate (i) and n</h3>
-                <p><strong>i</strong> is the annual effective interest rate: the rate at which money grows over one period. A dollar today is worth more than a dollar in the future — this is the <em>time value of money</em>. Raising <em>i</em> increases future values and decreases present values.</p>
+                <p><strong>i</strong> is the annual effective interest rate: the rate at which money grows over one period. A dollar today is worth more than a dollar a year from now because you can invest that dollar today and earn interest on it &mdash; this is the <em>time value of money</em>.</p>
                 <p><strong>n</strong> is the total number of time periods on the diagram. Increase it to model longer horizons.</p>
             </div>
 
             <div class="help-section">
                 <h3>Calculator Modes</h3>
                 <ul>
-                    <li><strong>Individual Payments</strong> — Enter any cash flow at any tick. Model single or multiple payments freely. Ideal for exploring how isolated amounts move through time.</li>
-                    <li><strong>Annuities</strong> — A sequence of equal, evenly-spaced payments. Set the payment amount, start period, and end period. The calculator shows the present value of the entire stream.</li>
-                    <li><strong>Loans</strong> — Models a level-payment amortizing loan. Provide the loan amount and term; the tool derives the equal periodic payment and tracks the outstanding balance at any point.</li>
-                    <li><strong>Bonds</strong> — A bond pays periodic coupons plus a lump-sum face value at maturity. Enter the face value, coupon rate, and desired yield to compute the fair price.</li>
+                    <li><strong>Individual Payments</strong> &mdash; Enter any cash flow at any point; model how single or multiple individual payments grow over time.</li>
+                    <li><strong>Annuities</strong> &mdash; A sequence of equal (level), evenly-spaced payments. Set the payment amount, the start period, and end period to see what the sequence of payments is worth over time.</li>
+                    <li><strong>Loans</strong> &mdash; Models a level-payment amortizing loan. Provide the loan amount and term; the calculator will derive the equal periodic payments to pay off the loan in a fixed interval of time.</li>
+                    <li><strong>Bonds</strong> &mdash; A bond pays periodic coupons plus its face value at maturity. Enter the face value, coupon rate, and desired yield to see how the bond&rsquo;s price evolves over time.</li>
                 </ul>
             </div>
 
             <div class="help-section">
-                <h3>The Graph</h3>
-                <p>Displays how the selected quantity (present value, loan balance, or bond price) changes across all time points. This is a direct visual representation of the time value of money in action — notice how values shift as you move money forward or backward in time.</p>
-            </div>
-
-            <div class="help-section">
                 <h3>Game Mode</h3>
-                <p>Test your understanding with randomly generated, exam-style multiple-choice problems drawn from all four topics. After selecting an answer, a complete step-by-step solution is shown in standard actuarial notation. Use the <em>Formulas</em> button for a concise reference sheet, and <em>New Question</em> to move on.</p>
+                <p>Test your understanding with randomly generated, exam-style multiple-choice problems drawn from all four topics. All questions can be solved directly using the calculator. After selecting an answer, a complete step-by-step solution is shown in standard actuarial notation. Use the <em>Formulas</em> button for a concise reference sheet, and <em>New Question</em> to move on.</p>
             </div>
 
             <div class="help-section">
@@ -900,12 +942,45 @@
         }
 
         function updateAllTextBoxSizes() {
-            const { width, fontSize } = calculateOptimalTextBoxSize();
             const textBoxes = document.querySelectorAll('.value-input');
-            
+            if (!textBoxes.length) return;
+
+            const n = parseInt(document.getElementById('n-input').value) || 4;
+            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
+            const isMobile = window.innerWidth <= 768;
+            const diagramPad = isMobile ? 60 : 120;
+            const availableWidth = containerWidth - diagramPad;
+            const spacing = 10;
+            // Max pixels each box can occupy before ticks overlap
+            const maxBoxWidth = Math.floor((availableWidth - spacing * n) / (n + 1));
+
+            // Find the longest value string currently displayed
+            let maxLen = 1;
             textBoxes.forEach(input => {
-                input.style.width = width;
-                input.style.fontSize = fontSize;
+                maxLen = Math.max(maxLen, (input.value || '0').length);
+            });
+
+            // Step down through font sizes until the text fits within maxBoxWidth.
+            // At font size f px, Times New Roman averages ~0.58*f px per character.
+            // Add 8 px for input padding.
+            const inputPad = 8;
+            let chosenFont = 12;
+            let chosenWidth;
+            for (const fs of [12, 11, 10, 9, 8, 7, 6]) {
+                const needed = Math.ceil(maxLen * fs * 0.58) + inputPad;
+                if (needed <= maxBoxWidth || fs === 6) {
+                    chosenFont = fs;
+                    // Don't let boxes shrink below 32px (looks odd when values are short like "0")
+                    chosenWidth = Math.min(maxBoxWidth, Math.max(needed, 32));
+                    break;
+                }
+            }
+
+            const widthStr  = chosenWidth + 'px';
+            const fontStr   = chosenFont  + 'px';
+            textBoxes.forEach(input => {
+                input.style.width    = widthStr;
+                input.style.fontSize = fontStr;
             });
         }
 
