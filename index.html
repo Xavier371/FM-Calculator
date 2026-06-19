@@ -1036,8 +1036,9 @@
             const n = parseInt(document.getElementById('n-input').value) || 4;
             cashFlowValues.clear();
             for (let i = 0; i <= n; i++) {
-                const value = (i === 1) ? '1' : '0';
-                cashFlowValues.set(i, value);
+                // In game mode all cash flows start at 0 so the user works from a blank diagram.
+                // In calculator mode, seed time 1 with 1 as a convenient starting point.
+                cashFlowValues.set(i, (!isGameMode && i === 1) ? '1' : '0');
             }
             updateTicks();
         }
