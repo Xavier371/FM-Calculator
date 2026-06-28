@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1589,6 +1588,7 @@
         let isGameMode = false;
         let currentQuestion = null;
         let questionAnswered = false;
+        let questionCount = 0;
 
         function toggleGameMode() {
             isGameMode = !isGameMode;
@@ -1600,6 +1600,7 @@
                 btn.classList.add('active');
                 panel.classList.add('visible');
                 title.textContent = 'Financial Math Game';
+                questionCount = 0;
                 refreshQuestion();
             } else {
                 btn.textContent = 'Game Mode';
@@ -1611,11 +1612,16 @@
 
         function refreshQuestion() {
             document.getElementById('calc-body').classList.remove('solved');
-            const rand = Math.random();
-            if (rand < 0.50)       currentQuestion = genIndividual();
-            else if (rand < 0.667) currentQuestion = genAnnuity();
-            else if (rand < 0.833) currentQuestion = genLoan();
-            else                   currentQuestion = genBond();
+            if (questionCount === 0)      currentQuestion = genIndividual();
+            else if (questionCount === 1) currentQuestion = genAnnuity();
+            else {
+                const rand = Math.random();
+                if (rand < 0.50)       currentQuestion = genIndividual();
+                else if (rand < 0.667) currentQuestion = genAnnuity();
+                else if (rand < 0.833) currentQuestion = genLoan();
+                else                   currentQuestion = genBond();
+            }
+            questionCount++;
             handleModeChange(currentQuestion.calcState.mode);
             renderQuestion(currentQuestion);
         }
