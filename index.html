@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -88,12 +89,19 @@
             font-size: 14px;
         }
         
+        /* Hide number-input spinners so they don't eat into the text area */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
         .param-input {
             width: 45px;
+            min-width: 34px;
+            max-width: 110px;
             text-align: center;
             font-family: 'Times New Roman', Times, serif;
             font-size: 13px;
-            padding: 3px;
+            padding: 3px 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
             color: #1a237e;
@@ -549,7 +557,6 @@
                 font-size: 13px;
             }
             .param-input {
-                width: 40px;
                 font-size: 12px;
             }
             #type-select {
@@ -692,7 +699,7 @@
                 flex-wrap: wrap;
             }
             .param-group span { font-size: 12px; }
-            .param-input { width: 38px; font-size: 11px; }
+            .param-input { font-size: 11px; }
             #type-select { width: 58px; }
             .diagram { height: 90px; padding: 0 12px; }
             .value-input { width: 44px; font-size: 11px; top: -28px; }
@@ -945,42 +952,58 @@
             if (!textBoxes.length) return;
 
             const n = parseInt(document.getElementById('n-input').value) || 4;
-            const containerWidth = document.querySelector('.time-diagram-container').offsetWidth;
+            const container = document.querySelector('.time-diagram-container');
+            if (!container) return;
+            const containerWidth = container.offsetWidth;
             const isMobile = window.innerWidth <= 768;
-            const diagramPad = isMobile ? 60 : 120;
-            const availableWidth = containerWidth - diagramPad;
-            const spacing = 10;
-            // Max pixels each box can occupy before ticks overlap
-            const maxBoxWidth = Math.floor((availableWidth - spacing * n) / (n + 1));
+            const diagramPad = isMobile ? 50 : 100;
+            const availableWidth = Math.max(containerWidth - diagramPad - 10, 80);
+            const slotWidth = availableWidth / (n + 1);
+            const maxBoxWidth = Math.max(22, Math.floor(slotWidth * 0.90));
 
-            // Find the longest value string currently displayed
-            let maxLen = 1;
-            textBoxes.forEach(input => {
-                maxLen = Math.max(maxLen, (input.value || '0').length);
+            // Find the value needing the most space
+            let maxVal = '0';
+            textBoxes.forEach(inp => {
+                const v = inp.value || '0';
+                if (v.length > maxVal.length) maxVal = v;
             });
 
-            // Step down through font sizes until the text fits within maxBoxWidth.
-            // At font size f px, Times New Roman averages ~0.58*f px per character.
-            // Add 8 px for input padding.
-            const inputPad = 8;
-            let chosenFont = 12;
-            let chosenWidth;
-            for (const fs of [12, 11, 10, 9, 8, 7, 6]) {
-                const needed = Math.ceil(maxLen * fs * 0.58) + inputPad;
-                if (needed <= maxBoxWidth || fs === 6) {
+            // Canvas measurement for accuracy
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const fontFace = '"Times New Roman", Times, serif';
+            const inputPad = 14;  // padding + border + 4px buffer
+            const minWidth = 26;
+
+            let chosenFont = 8, chosenWidth = minWidth;
+            for (const fs of [13, 12, 11, 10, 9, 8]) {
+                ctx.font = `${fs}px ${fontFace}`;
+                const needed = Math.ceil(ctx.measureText(maxVal).width) + inputPad;
+                if (needed <= maxBoxWidth || fs === 8) {
                     chosenFont = fs;
-                    // Don't let boxes shrink below 32px (looks odd when values are short like "0")
-                    chosenWidth = Math.min(maxBoxWidth, Math.max(needed, 32));
+                    chosenWidth = Math.max(minWidth, Math.min(maxBoxWidth, needed));
                     break;
                 }
             }
 
-            const widthStr  = chosenWidth + 'px';
-            const fontStr   = chosenFont  + 'px';
-            textBoxes.forEach(input => {
-                input.style.width    = widthStr;
-                input.style.fontSize = fontStr;
+            textBoxes.forEach(inp => {
+                inp.style.width    = chosenWidth + 'px';
+                inp.style.fontSize = chosenFont  + 'px';
             });
+        }
+
+        function autoSizeParamInput(input) {
+            if (input.tagName === 'SELECT') return;
+            const fs = parseFloat(getComputedStyle(input).fontSize) || 13;
+            const len = Math.max(1, (input.value || '0').length);
+            // 0.72× font-size per character is a reliable estimate for Times New Roman;
+            // add 20px for padding + border + breathing room
+            const w = Math.max(38, Math.min(110, Math.ceil(len * fs * 0.72) + 20));
+            input.style.width = w + 'px';
+        }
+
+        function autoSizeAllParamInputs() {
+            document.querySelectorAll('.param-input').forEach(autoSizeParamInput);
         }
 
         function handleModeChange(newMode) {
@@ -1029,6 +1052,7 @@
                 calcTitle.textContent = 'Present Value at Selected Time';
                 initializeIndividualPayments();
             }
+            setTimeout(autoSizeAllParamInputs, 0);
         }
 
         function initializeIndividualPayments() {
@@ -1414,6 +1438,7 @@
             setTimeout(() => {
                 applyAutoScale();
                 updateAllTextBoxSizes();
+                autoSizeAllParamInputs();
             }, 10);
         }
 
@@ -1575,11 +1600,18 @@
                 setTimeout(() => {
                     applyAutoScale();
                     updateAllTextBoxSizes();
+                    autoSizeAllParamInputs();
                 }, 100);
             });
-            
+
+            // Auto-size param inputs as user types
+            document.querySelectorAll('.param-input').forEach(inp => {
+                inp.addEventListener('input', () => autoSizeParamInput(inp));
+            });
+
             updateTicks();
             handleModeChange('individual');
+            autoSizeAllParamInputs();
             buildFormulaRef();
             toggleGameMode();
         });
@@ -1722,6 +1754,7 @@
                 updateDynamicDescription();
                 updateGraph();
             }
+            autoSizeAllParamInputs();
         }
 
         function showSolution(q) {
