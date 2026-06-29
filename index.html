@@ -1082,7 +1082,8 @@
             let amount = Number(document.getElementById('amount-input').value);
             if (Number.isNaN(amount)) amount = 1;
         
-            const startDate = parseInt(document.getElementById('start-date-input').value) || 1;
+            let startDate = parseInt(document.getElementById('start-date-input').value);
+            if (Number.isNaN(startDate)) startDate = 1;
         
             cashFlowValues.clear();
             for (let i = 0; i <= n; i++) {
